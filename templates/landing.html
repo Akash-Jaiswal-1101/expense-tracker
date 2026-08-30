@@ -27,7 +27,25 @@
 
         <div class="lhero-actions">
             <a href="{{ url_for('register') }}" class="lhero-btn-primary">Create free account</a>
-            <a href="{{ url_for('login') }}" class="lhero-btn-secondary">See how it works</a>
+            <button id="howItWorksBtn" class="lhero-btn-secondary">See how it works</button>
+        </div>
+
+        <!-- Video modal -->
+        <div id="videoModal" class="vmodal" aria-hidden="true">
+            <div class="vmodal-backdrop"></div>
+            <div class="vmodal-dialog" role="dialog" aria-modal="true" aria-label="How Spendly works">
+                <button class="vmodal-close" aria-label="Close">&times;</button>
+                <div class="vmodal-video">
+                    <iframe id="videoFrame"
+                        src=""
+                        data-src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1"
+                        title="How Spendly works"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
         </div>
 
         <div class="lhero-dashboard">
@@ -108,4 +126,40 @@
     </div>
 </section>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var modal    = document.getElementById('videoModal');
+    var frame    = document.getElementById('videoFrame');
+    var openBtn  = document.getElementById('howItWorksBtn');
+    var closeBtn = modal.querySelector('.vmodal-close');
+    var backdrop = modal.querySelector('.vmodal-backdrop');
+
+    function openModal() {
+        frame.src = frame.dataset.src;
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        frame.src = '';
+        document.body.style.overflow = '';
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+            closeModal();
+        }
+    });
+})();
+</script>
 {% endblock %}
