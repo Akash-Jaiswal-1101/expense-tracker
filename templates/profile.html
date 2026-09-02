@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Profile — Spendly{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="profile-inner">
+
+        <!-- User info card -->
+        <div class="profile-header-card">
+            <div class="profile-avatar">{{ user.initials }}</div>
+            <div class="profile-meta">
+                <h1 class="profile-name">{{ user.name }}</h1>
+                <p class="profile-email">{{ user.email }}</p>
+                <p class="profile-since">Member since {{ user.member_since }}</p>
+            </div>
+        </div>
+
+        <!-- Summary stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <span class="stat-label">Total Spent</span>
+                <span class="stat-value">{{ stats.total_spent }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Transactions</span>
+                <span class="stat-value">{{ stats.transaction_count }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Top Category</span>
+                <span class="stat-value">{{ stats.top_category }}</span>
+            </div>
+        </div>
+
+        <div class="profile-grid">
+
+            <!-- Transaction history -->
+            <div class="profile-card">
+                <h2 class="card-title">Recent Transactions</h2>
+                <table class="tx-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th class="tx-amount-col">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in transactions %}
+                        <tr>
+                            <td class="tx-date">{{ tx.date }}</td>
+                            <td>{{ tx.description }}</td>
+                            <td><span class="badge badge--{{ tx.category | lower }}">{{ tx.category }}</span></td>
+                            <td class="tx-amount">{{ tx.amount }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Category breakdown -->
+            <div class="profile-card">
+                <h2 class="card-title">Category Breakdown</h2>
+                <div class="breakdown-list">
+                    {% for cat in categories %}
+                    <div class="breakdown-row">
+                        <div class="breakdown-meta">
+                            <span class="breakdown-name">{{ cat.name }}</span>
+                            <span class="breakdown-total">{{ cat.total }}</span>
+                        </div>
+                        <div class="breakdown-track">
+                            <div class="breakdown-bar breakdown-bar--{{ cat.name | lower }}" style="width: {{ cat.pct }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
