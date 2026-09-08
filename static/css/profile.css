@@ -1,0 +1,94 @@
+/* ------------------------------------------------------------------ */
+/* Filter bar                                                          */
+/* ------------------------------------------------------------------ */
+
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+}
+
+.filter-presets {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.preset-btn {
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--ink-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-family: var(--font-body);
+    transition: all 0.15s;
+}
+
+.preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.preset-btn--active {
+    background: var(--accent);
+    color: var(--paper-card);
+    border-color: var(--accent);
+}
+
+.filter-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-sep { font-size: 0.85rem; color: var(--ink-faint); }
+
+.filter-form input[type="date"] {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.3rem 0.6rem;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    background: var(--paper);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.filter-form input[type="date"]:focus { border-color: var(--accent); }
+
+/* ------------------------------------------------------------------ */
+/* Buttons                                                             */
+/* ------------------------------------------------------------------ */
+
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.btn--sm { padding: 0.3rem 0.75rem; font-size: 0.8rem; }
+
+.btn:not(.btn--ghost) { background: var(--ink); color: var(--paper-card); }
+.btn:not(.btn--ghost):hover { background: var(--accent); }
+
+.btn--ghost {
+    background: transparent;
+    color: var(--ink-muted);
+    border: 1px solid var(--border);
+}
+
+.btn--ghost:hover { border-color: var(--ink); color: var(--ink); }

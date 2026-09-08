@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Profile — Spendly{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="profile-page">
     <div class="profile-inner">
@@ -13,6 +17,29 @@
                 <p class="profile-email">{{ user.email }}</p>
                 <p class="profile-since">Member since {{ user.member_since }}</p>
             </div>
+        </div>
+
+        <!-- Date filter bar -->
+        <div class="filter-bar">
+            <div class="filter-presets">
+                <a href="{{ url_for('profile') }}"
+                   class="preset-btn{% if not date_from and not date_to %} preset-btn--active{% endif %}">All Time</a>
+                <a href="{{ url_for('profile', date_from=presets.this_month, date_to=presets.today) }}"
+                   class="preset-btn{% if date_from == presets.this_month and date_to == presets.today %} preset-btn--active{% endif %}">This Month</a>
+                <a href="{{ url_for('profile', date_from=presets.last_3m, date_to=presets.today) }}"
+                   class="preset-btn{% if date_from == presets.last_3m and date_to == presets.today %} preset-btn--active{% endif %}">Last 3 Months</a>
+                <a href="{{ url_for('profile', date_from=presets.last_6m, date_to=presets.today) }}"
+                   class="preset-btn{% if date_from == presets.last_6m and date_to == presets.today %} preset-btn--active{% endif %}">Last 6 Months</a>
+            </div>
+            <form class="filter-form" method="get" action="{{ url_for('profile') }}">
+                <input type="date" name="date_from" value="{{ date_from or '' }}">
+                <span class="filter-sep">to</span>
+                <input type="date" name="date_to" value="{{ date_to or '' }}">
+                <button type="submit" class="btn btn--sm">Apply</button>
+                {% if date_from or date_to %}
+                <a href="{{ url_for('profile') }}" class="btn btn--sm btn--ghost">Clear</a>
+                {% endif %}
+            </form>
         </div>
 
         <!-- Summary stats -->
