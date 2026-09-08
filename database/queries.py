@@ -2,13 +2,19 @@ from datetime import datetime
 from database.db import get_db
 
 
-def get_recent_transactions(user_id, limit=10):
+def get_recent_transactions(user_id, limit=10, date_from=None, date_to=None):
     conn = get_db()
-    rows = conn.execute(
+    sql = (
         "SELECT date, description, category, amount FROM expenses "
-        "WHERE user_id = ? ORDER BY date DESC LIMIT ?",
-        (user_id, limit)
-    ).fetchall()
+        "WHERE user_id = ?"
+    )
+    params = [user_id]
+    if date_from and date_to:
+        sql += " AND date BETWEEN ? AND ?"
+        params.extend([date_from, date_to])
+    sql += " ORDER BY date DESC LIMIT ?"
+    params.append(limit)
+    rows = conn.execute(sql, params).fetchall()
     conn.close()
     return [
         {
@@ -21,19 +27,20 @@ def get_recent_transactions(user_id, limit=10):
     ]
 
 
-def get_summary_stats(user_id):
+def get_summary_stats(user_id, date_from=None, date_to=None):
     conn = get_db()
-    row = conn.execute(
-        "SELECT SUM(amount), COUNT(*) FROM expenses WHERE user_id = ?",
-        (user_id,)
+    base = "FROM expenses WHERE user_id = ?"
+    params = [user_id]
+    if date_from and date_to:
+        base += " AND date BETWEEN ? AND ?"
+        params.extend([date_from, date_to])
+    row = conn.execute(f"SELECT SUM(amount), COUNT(*) {base}", params).fetchone()
+    top = conn.execute(
+        f"SELECT category {base} GROUP BY category ORDER BY SUM(amount) DESC LIMIT 1",
+        params
     ).fetchone()
     total = row[0] or 0.0
     count = row[1] or 0
-    top = conn.execute(
-        "SELECT category FROM expenses WHERE user_id = ? "
-        "GROUP BY category ORDER BY SUM(amount) DESC LIMIT 1",
-        (user_id,)
-    ).fetchone()
     conn.close()
     return {
         "total_spent": f"₹{total:.2f}",
@@ -60,13 +67,18 @@ def get_user_by_id(user_id):
     }
 
 
-def get_category_breakdown(user_id):
+def get_category_breakdown(user_id, date_from=None, date_to=None):
     conn = get_db()
-    rows = conn.execute(
+    sql = (
         "SELECT category, SUM(amount) as total FROM expenses "
-        "WHERE user_id = ? GROUP BY category ORDER BY total DESC",
-        (user_id,)
-    ).fetchall()
+        "WHERE user_id = ?"
+    )
+    params = [user_id]
+    if date_from and date_to:
+        sql += " AND date BETWEEN ? AND ?"
+        params.extend([date_from, date_to])
+    sql += " GROUP BY category ORDER BY total DESC"
+    rows = conn.execute(sql, params).fetchall()
     conn.close()
     if not rows:
         return []
