@@ -141,9 +141,67 @@ def profile():
                            presets=presets)
 
 
-@app.route("/expenses/add")
+@app.route("/analytics")
+def analytics():
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+    return render_template("analytics.html")
+
+
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    if request.method == "GET":
+        today = date.today().isoformat()
+        return render_template("add_expense.html", today=today)
+
+    # POST — validate and insert
+    amount_str  = request.form.get("amount", "").strip()
+    category    = request.form.get("category", "").strip()
+    date_val    = request.form.get("date", "").strip()
+    description = request.form.get("description", "").strip()
+
+    error = None
+    if not amount_str:
+        error = "Amount is required."
+    else:
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                error = "Amount must be greater than zero."
+        except ValueError:
+            error = "Amount must be a valid number."
+
+    if not error and not category:
+        error = "Category is required."
+
+    if not error:
+        parsed = _parse_date(date_val)
+        if not parsed:
+            error = "Date is required and must be a valid date."
+
+    if error:
+        flash(error, "error")
+        today = date.today().isoformat()
+        return render_template("add_expense.html",
+                               today=today,
+                               form_amount=amount_str,
+                               form_category=category,
+                               form_date=date_val,
+                               form_description=description)
+
+    db = get_db()
+    db.execute(
+        "INSERT INTO expenses (user_id, amount, category, date, description) VALUES (?, ?, ?, ?, ?)",
+        (session["user_id"], amount, category, date_val, description or None)
+    )
+    db.commit()
+    db.close()
+
+    flash("Expense added successfully.", "success")
+    return redirect(url_for("profile"))
 
 
 @app.route("/expenses/<int:id>/edit")
