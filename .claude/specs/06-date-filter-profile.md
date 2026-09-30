@@ -6,7 +6,7 @@ narrow the transaction list, summary stats, and category breakdown to a specific
 period. The filter is driven entirely by query-string parameters (`date_from` and
 `date_to`) on `GET /profile`, requiring no new routes. A compact filter bar
 with four quick-select presets ("This Month", "Last 3 Months", "Last 6 Months",
-"All Time") and two `<input type="date">` fields lets users pick any custom range.
+"All Time") a nd two `<input type="date">` fields lets users pick any custom range.
 All three data sections (summary stats, recent transactions, category breakdown)
 must respect the active date filter.
 

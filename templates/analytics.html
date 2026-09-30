@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — Spendly{% endblock %}
+
+{% block content %}
+<section class="analytics-page">
+    <div class="analytics-inner">
+        <div class="analytics-coming-card">
+
+            <!-- Clock icon -->
+            <div class="analytics-icon-wrap">
+                <img src="{{ url_for('static', filename='images/analytics-clock-icon.svg') }}"
+                     alt="Clock icon" width="76" height="76">
+            </div>
+
+            <!-- Badge -->
+            <div class="analytics-badge">COMING SOON</div>
+
+            <!-- Title -->
+            <h1 class="analytics-title">Advanced Analytics</h1>
+
+            <!-- Description -->
+            <p class="analytics-subtitle">
+                We're working on powerful insights and visualizations to help
+                you understand your spending patterns better.
+            </p>
+
+            <!-- Three dots -->
+            <div class="analytics-dots">
+                <img src="{{ url_for('static', filename='images/analytics-dot-1.svg') }}" alt="" width="7" height="7">
+                <img src="{{ url_for('static', filename='images/analytics-dot-2.svg') }}" alt="" width="7" height="7">
+                <img src="{{ url_for('static', filename='images/analytics-dot-3.svg') }}" alt="" width="7" height="7">
+            </div>
+
+            <!-- Footer caption -->
+            <p class="analytics-footer-text">We're crafting something special</p>
+
+        </div>
+    </div>
+</section>
+{% endblock %}
