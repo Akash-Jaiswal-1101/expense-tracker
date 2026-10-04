@@ -75,6 +75,7 @@
                             <th>Description</th>
                             <th>Category</th>
                             <th class="tx-amount-col">Amount</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -84,6 +85,9 @@
                             <td>{{ tx.description }}</td>
                             <td><span class="badge badge--{{ tx.category | lower }}">{{ tx.category }}</span></td>
                             <td class="tx-amount">{{ tx.amount }}</td>
+                            <td>
+                              <a href="/expenses/{{ tx.id }}/edit" class="btn btn--sm">Edit</a>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

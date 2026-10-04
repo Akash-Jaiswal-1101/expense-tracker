@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Expense — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="auth-section">
+    <div class="auth-container">
+
+        <div class="auth-header">
+            <h1 class="auth-title">Edit Expense</h1>
+            <p class="auth-subtitle">Update the details of your expense</p>
+        </div>
+
+        <div class="auth-card">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="auth-error">{{ message }}</div>
+              {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="post" action="/expenses/{{ expense.id }}/edit">
+                <div class="form-group">
+                    <label for="amount">Amount (₹)</label>
+                    <input type="number" id="amount" name="amount"
+                           class="form-input" placeholder="0.00"
+                           step="0.01" min="0.01"
+                           value="{{ form_amount if form_amount is defined else expense.amount }}"
+                           required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" class="form-input" required>
+                        <option value="" disabled>Select a category</option>
+                        {% set selected_cat = form_category if form_category is defined else expense.category %}
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {% if selected_cat == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" name="date"
+                           class="form-input"
+                           value="{{ form_date if form_date is defined else expense.date }}"
+                           required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description <span style="font-weight:400;color:#888;">(optional)</span></label>
+                    <textarea id="description" name="description"
+                              class="form-input" placeholder="What was this expense for?"
+                              rows="3">{{ form_description if form_description is defined else (expense.description or '') }}</textarea>
+                </div>
+                <button type="submit" class="btn-submit">Save Changes</button>
+            </form>
+        </div>
+
+        <p class="auth-switch">
+            <a href="{{ url_for('profile') }}">← Back to Dashboard</a>
+        </p>
+
+    </div>
+</section>
+
+{% endblock %}

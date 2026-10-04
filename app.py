@@ -1,9 +1,25 @@
 import sqlite3
 from datetime import date, timedelta, datetime
-from flask import Flask, render_template, request, flash, redirect, url_for, abort, session
+from flask import (
+    Flask,
+    render_template,
+    request,
+    flash,
+    redirect,
+    url_for,
+    abort,
+    session,
+)
 from werkzeug.security import check_password_hash
 from database.db import get_db, init_db, seed_db, create_user, get_user_by_email
-from database.queries import get_user_by_id, get_summary_stats, get_recent_transactions, get_category_breakdown
+from database.queries import (
+    get_user_by_id,
+    get_summary_stats,
+    get_recent_transactions,
+    get_category_breakdown,
+    get_expense_by_id,
+    update_expense,
+)
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-key"
@@ -25,6 +41,7 @@ def _parse_date(value):
 # ------------------------------------------------------------------ #
 # Routes                                                              #
 # ------------------------------------------------------------------ #
+
 
 @app.route("/")
 def landing():
@@ -85,6 +102,7 @@ def login():
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
 
+
 @app.route("/terms")
 def terms():
     return render_template("terms.html")
@@ -108,7 +126,7 @@ def profile():
     user_id = session["user_id"]
 
     date_from = _parse_date(request.args.get("date_from"))
-    date_to   = _parse_date(request.args.get("date_to"))
+    date_to = _parse_date(request.args.get("date_to"))
 
     if date_from and date_to and date_from > date_to:
         flash("Start date must be before end date.", "error")
@@ -127,18 +145,22 @@ def profile():
         "last_6m": last_6m,
     }
 
-    user         = get_user_by_id(user_id)
-    stats        = get_summary_stats(user_id, date_from, date_to)
-    transactions = get_recent_transactions(user_id, date_from=date_from, date_to=date_to)
-    categories   = get_category_breakdown(user_id, date_from, date_to)
-    return render_template("profile.html",
-                           user=user,
-                           stats=stats,
-                           transactions=transactions,
-                           categories=categories,
-                           date_from=date_from,
-                           date_to=date_to,
-                           presets=presets)
+    user = get_user_by_id(user_id)
+    stats = get_summary_stats(user_id, date_from, date_to)
+    transactions = get_recent_transactions(
+        user_id, date_from=date_from, date_to=date_to
+    )
+    categories = get_category_breakdown(user_id, date_from, date_to)
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        transactions=transactions,
+        categories=categories,
+        date_from=date_from,
+        date_to=date_to,
+        presets=presets,
+    )
 
 
 @app.route("/analytics")
@@ -158,9 +180,9 @@ def add_expense():
         return render_template("add_expense.html", today=today)
 
     # POST — validate and insert
-    amount_str  = request.form.get("amount", "").strip()
-    category    = request.form.get("category", "").strip()
-    date_val    = request.form.get("date", "").strip()
+    amount_str = request.form.get("amount", "").strip()
+    category = request.form.get("category", "").strip()
+    date_val = request.form.get("date", "").strip()
     description = request.form.get("description", "").strip()
 
     error = None
@@ -185,17 +207,19 @@ def add_expense():
     if error:
         flash(error, "error")
         today = date.today().isoformat()
-        return render_template("add_expense.html",
-                               today=today,
-                               form_amount=amount_str,
-                               form_category=category,
-                               form_date=date_val,
-                               form_description=description)
+        return render_template(
+            "add_expense.html",
+            today=today,
+            form_amount=amount_str,
+            form_category=category,
+            form_date=date_val,
+            form_description=description,
+        )
 
     db = get_db()
     db.execute(
         "INSERT INTO expenses (user_id, amount, category, date, description) VALUES (?, ?, ?, ?, ?)",
-        (session["user_id"], amount, category, date_val, description or None)
+        (session["user_id"], amount, category, date_val, description or None),
     )
     db.commit()
     db.close()
@@ -204,9 +228,69 @@ def add_expense():
     return redirect(url_for("profile"))
 
 
-@app.route("/expenses/<int:id>/edit")
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
-    return "Edit expense — coming in Step 8"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    expense = get_expense_by_id(id, session["user_id"])
+    if expense is None:
+        abort(404)
+
+    categories = [
+        "Food",
+        "Transport",
+        "Bills",
+        "Health",
+        "Entertainment",
+        "Shopping",
+        "Other",
+    ]
+
+    if request.method == "GET":
+        return render_template(
+            "edit_expense.html", expense=expense, categories=categories
+        )
+
+    # POST — validate
+    amount_str = request.form.get("amount", "").strip()
+    category = request.form.get("category", "").strip()
+    date_val = request.form.get("date", "").strip()
+    description = request.form.get("description", "").strip()
+
+    error = None
+    amount = None
+    if not amount_str:
+        error = "Amount is required."
+    else:
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                error = "Amount must be greater than zero."
+        except ValueError:
+            error = "Amount must be a valid number."
+
+    if not error and category not in categories:
+        error = "Category is required."
+
+    if not error and not _parse_date(date_val):
+        error = "Date is required and must be a valid date."
+
+    if error:
+        flash(error, "error")
+        return render_template(
+            "edit_expense.html",
+            expense=expense,
+            categories=categories,
+            form_amount=amount_str,
+            form_category=category,
+            form_date=date_val,
+            form_description=description,
+        )
+
+    update_expense(id, session["user_id"], amount, category, date_val, description)
+    flash("Expense updated successfully.", "success")
+    return redirect(url_for("profile"))
 
 
 @app.route("/expenses/<int:id>/delete")
