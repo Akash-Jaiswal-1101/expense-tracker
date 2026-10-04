@@ -5,7 +5,7 @@ from database.db import get_db
 def get_recent_transactions(user_id, limit=10, date_from=None, date_to=None):
     conn = get_db()
     sql = (
-        "SELECT date, description, category, amount FROM expenses "
+        "SELECT id, date, description, category, amount FROM expenses "
         "WHERE user_id = ?"
     )
     params = [user_id]
@@ -18,6 +18,7 @@ def get_recent_transactions(user_id, limit=10, date_from=None, date_to=None):
     conn.close()
     return [
         {
+            "id": r["id"],
             "date": datetime.strptime(r["date"], "%Y-%m-%d").strftime("%b %-d"),
             "description": r["description"],
             "category": r["category"],
@@ -25,6 +26,25 @@ def get_recent_transactions(user_id, limit=10, date_from=None, date_to=None):
         }
         for r in rows
     ]
+
+
+def get_expense_by_id(expense_id, user_id):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM expenses WHERE id = ? AND user_id = ?", (expense_id, user_id)
+    ).fetchone()
+    conn.close()
+    return row
+
+
+def update_expense(expense_id, user_id, amount, category, date, description):
+    conn = get_db()
+    conn.execute(
+        "UPDATE expenses SET amount=?, category=?, date=?, description=? WHERE id=? AND user_id=?",
+        (amount, category, date, description or None, expense_id, user_id),
+    )
+    conn.commit()
+    conn.close()
 
 
 def get_summary_stats(user_id, date_from=None, date_to=None):
@@ -37,7 +57,7 @@ def get_summary_stats(user_id, date_from=None, date_to=None):
     row = conn.execute(f"SELECT SUM(amount), COUNT(*) {base}", params).fetchone()
     top = conn.execute(
         f"SELECT category {base} GROUP BY category ORDER BY SUM(amount) DESC LIMIT 1",
-        params
+        params,
     ).fetchone()
     total = row[0] or 0.0
     count = row[1] or 0
@@ -69,10 +89,7 @@ def get_user_by_id(user_id):
 
 def get_category_breakdown(user_id, date_from=None, date_to=None):
     conn = get_db()
-    sql = (
-        "SELECT category, SUM(amount) as total FROM expenses "
-        "WHERE user_id = ?"
-    )
+    sql = "SELECT category, SUM(amount) as total FROM expenses " "WHERE user_id = ?"
     params = [user_id]
     if date_from and date_to:
         sql += " AND date BETWEEN ? AND ?"
