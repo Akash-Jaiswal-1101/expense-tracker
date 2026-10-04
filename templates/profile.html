@@ -87,6 +87,10 @@
                             <td class="tx-amount">{{ tx.amount }}</td>
                             <td>
                               <a href="/expenses/{{ tx.id }}/edit" class="btn btn--sm">Edit</a>
+                              <form method="POST" action="/expenses/{{ tx.id }}/delete" style="display:inline"
+                                    onsubmit="return confirm('Delete this expense?')">
+                                <button type="submit" class="btn btn--sm btn--danger">Delete</button>
+                              </form>
                             </td>
                         </tr>
                         {% endfor %}

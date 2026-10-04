@@ -92,3 +92,13 @@
 }
 
 .btn--ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+.btn--danger {
+    background: var(--danger-light);
+    color: var(--danger);
+    border-color: var(--danger);
+}
+.btn--danger:hover {
+    background: var(--danger);
+    color: var(--paper-card);
+}
